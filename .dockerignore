@@ -1,0 +1,21 @@
+.git
+.claude
+docs
+*.md
+
+# 54 MB of tunnel binary that no image needs.
+cloudflared.exe
+*.ps1
+
+# Built or installed locally; the image builds its own.
+frontend/node_modules
+frontend/dist
+backend/.venv
+backend/.pytest_cache
+**/__pycache__
+*.pyc
+
+# Local databases and secrets never belong in an image layer.
+*.db
+.env
+**/.env

@@ -1,0 +1,20 @@
+# Railway: build the root Dockerfile (API + SPA in one service).
+#
+# Add the Postgres and Redis plugins to the project, then set these two
+# variables on the CyberShield service so it picks them up:
+#
+#   DATABASE_URL = ${{Postgres.DATABASE_URL}}
+#   REDIS_URL    = ${{Redis.REDIS_URL}}
+#
+# Railway injects PORT itself. Set JWT_SECRET to something random, and
+# WEB_CONCURRENCY to 2. See docs/DEPLOY.md.
+
+[build]
+builder = "dockerfile"
+dockerfilePath = "Dockerfile"
+
+[deploy]
+healthcheckPath = "/api/health"
+healthcheckTimeout = 120
+restartPolicyType = "on_failure"
+restartPolicyMaxRetries = 3

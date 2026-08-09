@@ -1,0 +1,63 @@
+# Render blueprint: one web service, one Postgres, one Redis.
+#
+# Deploy: push this repo to GitHub, then Render dashboard -> New -> Blueprint.
+# Everything below is created and wired automatically; the only value you may
+# want to add by hand is ANTHROPIC_API_KEY.
+#
+# See docs/DEPLOY.md for the Railway and plain-Docker equivalents.
+
+services:
+  - type: web
+    name: cybershield
+    runtime: docker
+    dockerfilePath: ./Dockerfile
+    # All three services must share a region to talk over private networking,
+    # and the region is most of the page-load latency a student feels. Singapore
+    # is the closest one to India; the others are oregon, ohio, virginia and
+    # frankfurt. Change all three together.
+    region: singapore
+    # `free` needs no payment method, and spins the service down after ~15 min
+    # idle: the first student to click a cold link waits ~50 s. Open the URL
+    # yourself a minute before class and nobody else ever sees that. `starter`
+    # removes the spin-down but requires a card.
+    plan: free
+    healthCheckPath: /api/health
+    envVars:
+      - key: DATABASE_URL
+        fromDatabase:
+          name: cybershield-db
+          property: connectionString
+      - key: REDIS_URL
+        fromService:
+          type: keyvalue
+          name: cybershield-redis
+          property: connectionString
+      - key: JWT_SECRET
+        generateValue: true
+      - key: ENVIRONMENT
+        value: production
+      # Safe above 1 only because REDIS_URL is set above. The free instance is
+      # 512 MB and two workers sit around 330 MB of it. If the service restarts
+      # by itself, that is the ceiling — set this to 1.
+      - key: WEB_CONCURRENCY
+        value: "2"
+      # Trimmed from 250: the backfill holds the whole batch in memory in one
+      # worker, and that peak is the riskiest moment on a 512 MB instance. 120
+      # events still fill the dashboard's charts and map on first load.
+      - key: SEED_DEMO_EVENTS
+        value: "120"
+
+  - type: keyvalue
+    name: cybershield-redis
+    region: singapore
+    plan: free
+    # Reachable only from services in this blueprint.
+    ipAllowList: []
+    maxmemoryPolicy: allkeys-lru
+
+databases:
+  - name: cybershield-db
+    databaseName: cybershield
+    user: cybershield
+    region: singapore
+    plan: free

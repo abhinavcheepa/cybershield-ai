@@ -1,0 +1,146 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    color-scheme: dark;
+  }
+
+  html,
+  body,
+  #root {
+    height: 100%;
+  }
+
+  body {
+    @apply bg-void text-slate-200 antialiased;
+    /* Faint grid, the way an operations console reads — not a gradient wash. */
+    background-image:
+      radial-gradient(circle at 12% -10%, rgba(34, 211, 238, 0.09), transparent 45%),
+      radial-gradient(circle at 92% 4%, rgba(244, 63, 94, 0.07), transparent 42%),
+      linear-gradient(rgba(148, 178, 255, 0.035) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(148, 178, 255, 0.035) 1px, transparent 1px);
+    background-size: 100% 100%, 100% 100%, 44px 44px, 44px 44px;
+    background-attachment: fixed;
+  }
+
+  ::selection {
+    @apply bg-accent/30 text-white;
+  }
+
+  ::-webkit-scrollbar {
+    width: 9px;
+    height: 9px;
+  }
+  ::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  ::-webkit-scrollbar-thumb {
+    @apply rounded-full bg-slate-700/70;
+  }
+  ::-webkit-scrollbar-thumb:hover {
+    @apply bg-slate-600;
+  }
+
+  :focus-visible {
+    @apply outline-none ring-2 ring-accent/70 ring-offset-2 ring-offset-void;
+  }
+}
+
+@layer components {
+  .glass {
+    @apply rounded-lg border border-hairline bg-white/[0.025] shadow-glass backdrop-blur-xl;
+  }
+
+  .panel-title {
+    @apply text-[11px] font-semibold uppercase tracking-[0.14em] text-slate-400;
+  }
+
+  .metric {
+    @apply font-mono text-3xl font-semibold tabular-nums text-white;
+  }
+
+  .data {
+    @apply font-mono text-[13px] tabular-nums;
+  }
+
+  .chip {
+    @apply inline-flex items-center gap-1.5 rounded border px-2 py-0.5 text-[11px] font-semibold uppercase tracking-wide;
+  }
+
+  .btn {
+    @apply inline-flex items-center justify-center gap-2 rounded-md border border-hairline bg-white/5 px-3.5 py-2
+      text-sm font-medium text-slate-200 transition-all duration-150
+      hover:border-accent/40 hover:bg-white/10 hover:text-white
+      disabled:cursor-not-allowed disabled:opacity-40 disabled:hover:border-hairline disabled:hover:bg-white/5;
+  }
+
+  .btn-primary {
+    @apply border-accent/50 bg-accent/15 text-accent hover:border-accent hover:bg-accent/25 hover:text-white;
+  }
+
+  .btn-danger {
+    @apply border-severity-critical/50 bg-severity-critical/10 text-severity-critical
+      hover:border-severity-critical hover:bg-severity-critical/20 hover:text-white;
+  }
+
+  .field {
+    @apply w-full rounded-md border border-hairline bg-black/30 px-3 py-2 text-sm text-slate-100
+      placeholder:text-slate-500 focus:border-accent/60 focus:outline-none focus:ring-1 focus:ring-accent/40;
+  }
+
+  .row-hover {
+    @apply transition-colors duration-100 hover:bg-white/[0.045];
+  }
+}
+
+/* Leaflet: strip the light chrome so the map belongs to the dark console. */
+.leaflet-container {
+  background: #04060c;
+  font-family: inherit;
+}
+.leaflet-control-attribution {
+  background: rgba(5, 7, 13, 0.82) !important;
+  color: #64748b !important;
+  font-size: 10px !important;
+  border-radius: 4px 0 0 0;
+}
+.leaflet-control-attribution a {
+  color: #94a3b8 !important;
+}
+.leaflet-control-zoom a {
+  background: rgba(11, 17, 32, 0.94) !important;
+  color: #cbd5e1 !important;
+  border-color: rgba(148, 178, 255, 0.16) !important;
+}
+.leaflet-control-zoom a:hover {
+  background: rgba(34, 211, 238, 0.22) !important;
+  color: #fff !important;
+}
+.leaflet-popup-content-wrapper,
+.leaflet-popup-tip {
+  background: rgba(11, 17, 32, 0.97) !important;
+  color: #e2e8f0 !important;
+  border: 1px solid rgba(148, 178, 255, 0.18);
+  border-radius: 8px;
+}
+.leaflet-popup-content {
+  margin: 10px 12px;
+  font-size: 12px;
+}
+.leaflet-popup-close-button {
+  color: #64748b !important;
+}
+
+/* Attack arc: draws itself from source to destination, then fades. */
+.attack-arc {
+  stroke-dasharray: 1000;
+  stroke-dashoffset: 1000;
+  animation: arc-draw 1.5s ease-out forwards;
+}
+@keyframes arc-draw {
+  to {
+    stroke-dashoffset: 0;
+  }
+}

@@ -1,0 +1,6 @@
+Welcome to your student site!
+
+This is a normal public file. Try reading it through:
+  GET /site/file?name=welcome.txt
+
+Everything here is part of a security lab. Nothing is real.

@@ -1,0 +1,66 @@
+services:
+  db:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: cybershield
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-cybershield}
+      POSTGRES_DB: cybershield
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U cybershield -d cybershield"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+    # Not published to the host: only the backend needs to reach it.
+    expose:
+      - "5432"
+
+  redis:
+    image: redis:7-alpine
+    # Everything in Redis here is short-lived shared state — detection windows,
+    # rate-limit counters, the leader claim. Losing it costs nothing, so no
+    # persistence and a hard memory ceiling instead of an unbounded dataset.
+    command: redis-server --save "" --appendonly no --maxmemory 256mb --maxmemory-policy allkeys-lru
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+    expose:
+      - "6379"
+
+  backend:
+    build: ./backend
+    environment:
+      DATABASE_URL: postgresql+psycopg://cybershield:${POSTGRES_PASSWORD:-cybershield}@db:5432/cybershield
+      REDIS_URL: redis://redis:6379/0
+      # Several workers are only correct with REDIS_URL set, which it is above.
+      WEB_CONCURRENCY: ${WEB_CONCURRENCY:-4}
+      # Override in a .env file beside this compose file before exposing the
+      # stack to anything but localhost.
+      JWT_SECRET: ${JWT_SECRET:-change-me-in-production}
+      ENVIRONMENT: docker
+      CORS_ORIGINS: http://localhost:8089
+      SEED_DEMO_EVENTS: ${SEED_DEMO_EVENTS:-250}
+      ANTHROPIC_API_KEY: ${ANTHROPIC_API_KEY:-}
+    depends_on:
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    ports:
+      # Host 8010 -> container 8000. 8000/8001/8080 belong to the
+      # voice-flow-ai stack on this machine; inside the compose network the
+      # backend still listens on 8000.
+      - "8010:8000"
+
+  frontend:
+    build: ./frontend
+    depends_on:
+      - backend
+    ports:
+      - "8089:80"
+
+volumes:
+  pgdata:
